@@ -115,7 +115,7 @@ passP = "mnemonic" + passphrase
 master_key = PBKDF2(pwd_a.encode('utf-8'), passP.encode('utf-8'), dkLen=length, count=iterations)
 #print("Master key: " + str(base64.b64encode(master_key)))
 
-deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "/0/" + str(addrs) #HD path
+deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "'/0/" + str(addrs) #HD path
 
 account_key = PBKDF2(master_key, deriv_path.encode('utf-8'), dkLen=length, count=1)
 #print("Account key: " + str(base64.b64encode(account_key)))

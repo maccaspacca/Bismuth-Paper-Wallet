@@ -59,7 +59,7 @@ while count < 101:
 	
 	master_key = PBKDF2(pwd_a.encode('utf-8'), passP.encode('utf-8'), dkLen=length, count=iterations)
 	
-	deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "/0/" + str(addrs) #HD path
+	deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "'/0/" + str(addrs) #HD path
 
 	account_key = PBKDF2(master_key, deriv_path.encode('utf-8'), dkLen=length, count=1)
 	
@@ -95,7 +95,7 @@ with open('testfile.txt') as file:
 		
 		master_key = PBKDF2(pwd_a.encode('utf-8'), passP.encode('utf-8'), dkLen=length, count=iterations)
 		
-		deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "/0/" + str(addrs) #HD path
+		deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "'/0/" + str(addrs) #HD path
 
 		account_key = PBKDF2(master_key, deriv_path.encode('utf-8'), dkLen=length, count=1)
 		
