@@ -1,12 +1,14 @@
 """
  Bismuth Paper Wallet Generator
- Version 0.1 Test Version
- Date 01/04/2018
+ Version 0.2 Test Version
+ Date 08/04/2018
  Copyright maccaspacca and jimhsu 2018
  Copyright The Bismuth Foundation 2016 to 2018
  Author Maccaspacca
  
- Usage: python write_paper_bis.py
+ Usage:
+Basic paper wallet: python write_paper_bis.py
+Full paper wallet including public and privkey storage: python write_paper_bis.py full
  
  A deterministic key will be created using a random 24 word mnemonic seed.
  The key creation uses the same methods as used in 'Proof of concept deterministic RSA address generation for Bismuth'
@@ -15,13 +17,15 @@
  The software will prompt for an optional passphrase as additional security - if you choose this option please be aware that this it NOT stored in the paper wallet
  IF YOU FORGET THE PASSPHRASE YOU WILL LOSE YOUR BISMUTH
  
+ The software will also ask you to optionally add a message (text) to be added to the first page.
+ 
  The wallet is saved as a PDF file together with the key files (for testing against a node)
  
  You can print the PDF out on a good quality laser printer and store in a secure location.
- test the key regeneration before sending any bismuth to the address or detroying the key files
+ test the key regeneration before sending any bismuth to the address or destroying the key files
 """
 
-import os, logging, pathlib, string, hashlib, pyqrcode, fpdf, time, base64
+import os, logging, pathlib, string, hashlib, pyqrcode, fpdf, time, base64, sys
 from logging.handlers import RotatingFileHandler
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.PublicKey import RSA
@@ -32,6 +36,17 @@ from libs.rsa_py import rsa_functions
 
 pubkey_txt = "Below are a number of QR code images which together form your public key. You should scan each one starting from the top and working your way down. Paste the text data into a file one after the other and then save the file as pubkey.der"
 privkey_txt = "Below are a number of QR code images which together form your private key. You should scan each one starting from the top and working your way down. Paste the text data into a file one after the other and then save the file as privkey.der"
+
+def do_more():
+	try:
+		if sys.argv[1]:
+			my_arg = sys.argv[1].lower()
+			if my_arg == "full":
+				return True
+			else:
+				return False
+	except:
+		return False
 
 def split_str(seq, chunk, skip_tail=False):
 	lst = []
@@ -59,7 +74,7 @@ class MyPDF(fpdf.FPDF):
 		# set the font for the header, B=Bold
 		self.set_font("Arial", style="B", size=15)
 		# page title
-		self.cell(60,10, "Bismuth Paper Wallet", border=0, ln=0, align="C")
+		self.cell(80,10, "Bismuth Paper Wallet", border=0, ln=0, align="C")
 		# insert a line break of 20 pixels
 		self.ln(20)
 
@@ -110,6 +125,7 @@ pwd_a = mnemo.generate(strength=256)
 
 app_log.info("Mnemonic (seed) = {}".format(pwd_a))
 passphrase = input("Enter optional passphrase (hit return for empty): ")
+opt_msg = input("Enter optional front page message (hit return for empty): ")
 passP = "mnemonic" + passphrase
 
 master_key = PBKDF2(pwd_a.encode('utf-8'), passP.encode('utf-8'), dkLen=length, count=iterations)
@@ -138,34 +154,45 @@ pwd_qr.png('pwd_qr.png')
 address_qr = pyqrcode.create(address)
 address_qr.png('{}/address_qr.png'.format(address))
 
-pub_split = split_str(str(public_key_readable), 512)
-priv_split = split_str(str(private_key_readable), 512)
-
-p = 0
-for pub in pub_split:
-	p +=1
-	this_qr = pyqrcode.create(pub)
-	this_qr.png('{}/pubkey_{}.png'.format(address,str(p)))
-	
-num_pubs = p
-	
-p = 0
-for priv in priv_split:
-	p +=1
-	this_qr = pyqrcode.create(priv)
-	this_qr.png('{}/privkey_{}.png'.format(address,str(p)))
-
-num_privs = p
-
-p = 0
-
 ##############################
 
 # Create PDF
 
-pdf = MyPDF()
+if do_more():
+	my_size = "A4"
+	my_orient = "P"
+	
+	pub_split = split_str(str(public_key_readable), 512)
+	priv_split = split_str(str(private_key_readable), 512)
+
+	p = 0
+	for pub in pub_split:
+		p +=1
+		this_qr = pyqrcode.create(pub)
+		this_qr.png('{}/pubkey_{}.png'.format(address,str(p)))
+		
+	num_pubs = p
+		
+	p = 0
+	for priv in priv_split:
+		p +=1
+		this_qr = pyqrcode.create(priv)
+		this_qr.png('{}/privkey_{}.png'.format(address,str(p)))
+
+	num_privs = p
+
+	p = 0
+else:
+	my_size = "A5"
+	my_orient = "L"
+
+pdf = MyPDF(my_orient,'mm',my_size)
 pdf.set_font("Times", size=12)
 pdf.alias_nb_pages()
+
+pdf.add_page()
+pdf.set_font("Times", style='B', size=12)
+pdf.cell(200, 10, opt_msg, ln=1, align="C")
 
 pdf.add_page()
 pdf.set_font("Times", style='B', size=12)
@@ -176,40 +203,45 @@ pdf.image('{}/address_qr.png'.format(address), x=70, y=60, w=75)
 pdf.add_page()
 pdf.set_font("Times", style='B', size=12)
 pdf.cell(200, 10, txt="24-word mnemonic seed in BIP39 format", ln=1, align="C")
-pdf.set_font("Times", style='B', size=16)
+pdf.set_font("Times", style='B', size=14)
 pdf.multi_cell(0,10,pwd_a,0,0,'J',False)
 pdf.image('pwd_qr.png'.format(address), x=70, y=60, w=75)
 
 if os.path.isfile("pwd_qr.png") is True:
 	os.remove("pwd_qr.png")
-			
-pdf.add_page()
-pdf.set_font("Times", style='B', size=12)
-pdf.cell(200, 10, txt="Public Key Information", ln=1, align="C")
-pdf.multi_cell(0,10,pubkey_txt,0,0,'J',False)
-pdf.set_font("Times", size=8)
-for d in range(num_pubs):
-	pdf.cell(0,4,'Scan number {}'.format(str(d+1)),0,1,'L')
-	pdf.image("{}/pubkey_{}.png".format(address,str(d+1)),w=75)
 	
-pdf.add_page()
-pdf.set_font("Times", size=8)
-pdf.ln(2)
-pdf.multi_cell(0,4,str(public_key_readable),0,0,'J',False)
+if do_more():
+	print("Print Full PDF")			
+	pdf.add_page()
+	pdf.set_font("Times", style='B', size=10)
+	pdf.cell(200, 10, txt="Public Key Information", ln=1, align="C")
+	pdf.multi_cell(0,10,pubkey_txt,0,0,'J',False)
+	pdf.set_font("Times", size=8)
+	for d in range(num_pubs):
+		pdf.cell(0,4,'Scan number {}'.format(str(d+1)),0,1,'L')
+		pdf.image("{}/pubkey_{}.png".format(address,str(d+1)),w=75)
+		
+	pdf.add_page()
+	pdf.set_font("Times", size=8)
+	pdf.ln(2)
+	pdf.multi_cell(0,4,str(public_key_readable),0,0,'J',False)
 
-pdf.add_page()
-pdf.set_font("Times", style='B', size=12)
-pdf.cell(200, 10, txt="Private Key Information", ln=1, align="C")
-pdf.multi_cell(0,10,privkey_txt,0,0,'J',False)
-pdf.set_font("Times", size=8)
-for d in range(num_privs):
-	pdf.cell(0,4,'Scan number {}'.format(str(d+1)),0,1,'L')
-	pdf.image("{}/privkey_{}.png".format(address,str(d+1)),w=75)
+	pdf.add_page()
+	pdf.set_font("Times", style='B', size=12)
+	pdf.cell(200, 10, txt="Private Key Information", ln=1, align="C")
+	pdf.multi_cell(0,10,privkey_txt,0,0,'J',False)
+	pdf.set_font("Times", size=8)
+	for d in range(num_privs):
+		pdf.cell(0,4,'Scan number {}'.format(str(d+1)),0,1,'L')
+		pdf.image("{}/privkey_{}.png".format(address,str(d+1)),w=75)
 
-pdf.add_page()
-pdf.set_font("Times", size=8)
-pdf.ln(2)
-pdf.multi_cell(0,4,str(private_key_readable),0,0,'J',False)
+	pdf.add_page()
+	pdf.set_font("Times", size=8)
+	pdf.ln(2)
+	pdf.multi_cell(0,4,str(private_key_readable),0,0,'J',False)
+
+else:
+	print("Print Normal PDF")
 
 pdf.output("{}/bis_{}.pdf".format(address,address))
 
