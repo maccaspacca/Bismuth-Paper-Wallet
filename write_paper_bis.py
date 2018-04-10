@@ -1,7 +1,7 @@
 """
  Bismuth Paper Wallet Generator
- Version 0.2 Test Version
- Date 08/04/2018
+ Version 0.3 Test Version
+ Date 10/04/2018
  Copyright maccaspacca and jimhsu 2018
  Copyright The Bismuth Foundation 2016 to 2018
  Author Maccaspacca
@@ -149,10 +149,10 @@ app_log.info('Generating address: ' + address)
 # generate key pair and an address
 
 pwd_qr = pyqrcode.create(pwd_a)
-pwd_qr.png('pwd_qr.png')
+pwd_qr.png('pwd_qr.png', scale=5)
 
 address_qr = pyqrcode.create(address)
-address_qr.png('{}/address_qr.png'.format(address))
+address_qr.png('{}/address_qr.png'.format(address), scale=5)
 
 ##############################
 
@@ -169,7 +169,7 @@ if do_more():
 	for pub in pub_split:
 		p +=1
 		this_qr = pyqrcode.create(pub)
-		this_qr.png('{}/pubkey_{}.png'.format(address,str(p)))
+		this_qr.png('{}/pubkey_{}.png'.format(address,str(p)), scale=5)
 		
 	num_pubs = p
 		
@@ -177,7 +177,7 @@ if do_more():
 	for priv in priv_split:
 		p +=1
 		this_qr = pyqrcode.create(priv)
-		this_qr.png('{}/privkey_{}.png'.format(address,str(p)))
+		this_qr.png('{}/privkey_{}.png'.format(address,str(p)), scale=5)
 
 	num_privs = p
 
