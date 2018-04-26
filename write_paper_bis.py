@@ -1,7 +1,7 @@
 """
  Bismuth Paper Wallet Generator
- Version 0.3 Test Version
- Date 10/04/2018
+ Version 0.4 Test Version
+ Date 26/04/2018
  Copyright maccaspacca and jimhsu 2018
  Copyright The Bismuth Foundation 2016 to 2018
  Author Maccaspacca
@@ -19,13 +19,13 @@ Full paper wallet including public and privkey storage: python write_paper_bis.p
  
  The software will also ask you to optionally add a message (text) to be added to the first page.
  
- The wallet is saved as a PDF file together with the key files (for testing against a node)
+ The wallet is saved as a PDF file together with the key file (wallet.der for testing against a node)
  
  You can print the PDF out on a good quality laser printer and store in a secure location.
  test the key regeneration before sending any bismuth to the address or destroying the key files
 """
 
-import os, logging, pathlib, string, hashlib, pyqrcode, fpdf, time, base64, sys
+import os, logging, pathlib, string, hashlib, pyqrcode, fpdf, time, base64, sys, json
 from logging.handlers import RotatingFileHandler
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.PublicKey import RSA
@@ -36,6 +36,16 @@ from libs.rsa_py import rsa_functions
 
 pubkey_txt = "Below are a number of QR code images which together form your public key. You should scan each one starting from the top and working your way down. Paste the text data into a file one after the other and then save the file as pubkey.der"
 privkey_txt = "Below are a number of QR code images which together form your private key. You should scan each one starting from the top and working your way down. Paste the text data into a file one after the other and then save the file as privkey.der"
+
+def keys_save(private_key_readable, public_key_readable, address):
+    wallet_dict = {}
+    wallet_dict['Private Key'] = private_key_readable
+    wallet_dict['Public Key'] = public_key_readable
+    wallet_dict['Address'] = address
+
+    with open ("{}/wallet.der".format(address), 'w') as wallet_file:
+        json.dump (wallet_dict, wallet_file)
+
 
 def do_more():
 	try:
@@ -248,18 +258,10 @@ pdf.output("{}/bis_{}.pdf".format(address,address))
 ################################################################
 
 app_log.info("Client: Your address: " + str(address))
-#app_log.info("Client: Your private key: " + str(private_key_readable))
-#app_log.info("Client: Your public key: " + str(public_key_readable))
 
-# created files
+# create files
 
-pem_file = open("{}/privkey.der".format(address), 'a')
-pem_file.write(str(private_key_readable))
-pem_file.close()
-
-pem_file = open("{}/pubkey.der".format(address), 'a')
-pem_file.write(str(public_key_readable))
-pem_file.close()
+keys_save(private_key_readable,public_key_readable,address)
 
 address_file = open("{}/address.txt".format(address), 'a')
 address_file.write(str(address) + "\n")

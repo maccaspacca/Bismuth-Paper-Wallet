@@ -26,7 +26,7 @@ IF YOU FORGET THE PASSPHRASE YOU WILL LOSE YOUR BISMUTH
  
 The software will also ask you to optionally add a message (text) to be added to the first page.
  
-The wallet is saved as a PDF file together with the key files (for testing against a node)
+The wallet is saved as a PDF file together with the key file (wallet.der for testing against a node)
  
 You can print the PDF out on a good quality laser printer and store in a secure location.
 
@@ -34,7 +34,7 @@ test the key regeneration before sending any bismuth to the address or destroyin
 
 read_paper_bis.py
 
-Reads the 24-word mnemonic seed from the paper wallet and recreates the address and the privkey.der and pubkey.der files
+Reads the 24-word mnemonic seed from the paper wallet and recreates the address and the wallet.der files
 
 Usage: python read_paper_bis.python
 

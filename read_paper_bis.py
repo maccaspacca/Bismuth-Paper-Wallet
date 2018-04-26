@@ -1,23 +1,32 @@
 """
  Bismuth Paper Wallet Seed Reader
- Version 0.1 Test Version
- Date 01/04/2018
+ Version 0.2 Test Version
+ Date 26/04/2018
  Copyright maccaspacca and jimhsu 2018
  Copyright The Bismuth Foundation 2016 to 2018
  Author Maccaspacca
  
- Reads the 24-word mnemonic seed from the paper wallet and recreates the address and the privkey.der / pubkey.der files
+ Reads the 24-word mnemonic seed from the paper wallet and recreates the address and the wallet.der files
  Usage - python read_paper_bis.python
  make sure you have the mnemonic seed available and type in when prompted
  if you used a passphrase when you created the wallet then enter this when prompted
  the files are created in a folder named with the address name 
 """
 
-import os, logging, pathlib, string, hashlib, time, base64
+import os, logging, pathlib, string, hashlib, time, base64, json
 from logging.handlers import RotatingFileHandler
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.PublicKey import RSA
 from libs.rsa_py import rsa_functions
+
+def keys_save(private_key_readable, public_key_readable, address):
+    wallet_dict = {}
+    wallet_dict['Private Key'] = private_key_readable
+    wallet_dict['Public Key'] = public_key_readable
+    wallet_dict['Address'] = address
+
+    with open ("{}/wallet.der".format(address), 'w') as wallet_file:
+        json.dump (wallet_dict, wallet_file)
 
 # setup logging
 
@@ -72,18 +81,10 @@ app_log.info('Generating address: ' + address)
 # generate key pair and an address
 
 app_log.info("Client: Your address: " + str(address))
-#app_log.info("Client: Your private key: " + str(private_key_readable))
-#app_log.info("Client: Your public key: " + str(public_key_readable))
 
-# created files
+# create files
 
-pem_file = open("{}/privkey.der".format(address), 'a')
-pem_file.write(str(private_key_readable))
-pem_file.close()
-
-pem_file = open("{}/pubkey.der".format(address), 'a')
-pem_file.write(str(public_key_readable))
-pem_file.close()
+keys_save(private_key_readable,public_key_readable,address)
 
 address_file = open("{}/address.txt".format(address), 'a')
 address_file.write(str(address) + "\n")
