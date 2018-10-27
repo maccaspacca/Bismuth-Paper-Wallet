@@ -1,13 +1,13 @@
 """
  Bismuth Paper Wallet Seed Reader
- Version 0.2 Test Version
- Date 26/04/2018
+ Version 0.3 Release Candidate
+ Date 26/10/2018
  Copyright maccaspacca and jimhsu 2018
  Copyright The Bismuth Foundation 2016 to 2018
  Author Maccaspacca
  
  Reads the 24-word mnemonic seed from the paper wallet and recreates the address and the wallet.der files
- Usage - python read_paper_bis.python
+ Usage - python read_paper_bis.py
  make sure you have the mnemonic seed available and type in when prompted
  if you used a passphrase when you created the wallet then enter this when prompted
  the files are created in a folder named with the address name 

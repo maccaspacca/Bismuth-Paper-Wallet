@@ -41,15 +41,3 @@ Usage: python read_paper_bis.python
 Make sure you have the mnemonic seed available and type in when prompted. If you used a passphrase when you created the wallet then also enter this when prompted.
 
 The files are created in a folder named with the address name.
-
-test.py
-
-This can be used to test the key creation and regeneration code.
-
-Usage: python test.py
-
-100 addresses are generated deterministically. The deterministic word list is then used again and the resulting address compaired with the original.
-
-If the addresses are the same then we have success
-
-The test should result in 100% success

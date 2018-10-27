@@ -1,7 +1,7 @@
 """
  Bismuth Paper Wallet Generator
- Version 0.4 Test Version
- Date 26/04/2018
+ Version 0.5 Release Candidate
+ Date 26/10/2018
  Copyright maccaspacca and jimhsu 2018
  Copyright The Bismuth Foundation 2016 to 2018
  Author Maccaspacca
@@ -130,32 +130,42 @@ addrs = 1
 
 # key generation
 
-address = ""
-pwd_a = mnemo.generate(strength=256)
+m_ken = False
 
-app_log.info("Mnemonic (seed) = {}".format(pwd_a))
-passphrase = input("Enter optional passphrase (hit return for empty): ")
-opt_msg = input("Enter optional front page message (hit return for empty): ")
-passP = "mnemonic" + passphrase
+while not m_ken: # catch a bad seed
 
-master_key = PBKDF2(pwd_a.encode('utf-8'), passP.encode('utf-8'), dkLen=length, count=iterations)
-#print("Master key: " + str(base64.b64encode(master_key)))
+	try:
+		address = ""
+		pwd_a = mnemo.generate(strength=256)
 
-deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "'/0/" + str(addrs) #HD path
+		app_log.info("Mnemonic (seed) = {}".format(pwd_a))
+		passphrase = input("Enter optional passphrase (hit return for empty): ")
+		opt_msg = input("Enter optional front page message (hit return for empty): ")
+		passP = "mnemonic" + passphrase
 
-account_key = PBKDF2(master_key, deriv_path.encode('utf-8'), dkLen=length, count=1)
-#print("Account key: " + str(base64.b64encode(account_key)))
+		master_key = PBKDF2(pwd_a.encode('utf-8'), passP.encode('utf-8'), dkLen=length, count=iterations)
+		#print("Master key: " + str(base64.b64encode(master_key)))
 
-rsa = rsa_functions.RSAPy(n,account_key)
-key = RSA.construct(rsa.keypair)
+		deriv_path = "m/44'/"+ str(cointype) +"'/" + str(aid) + "'/0/" + str(addrs) #HD path
 
-private_key_readable = key.exportKey().decode("utf-8")
-public_key_readable = key.publickey().exportKey().decode("utf-8")
-address = hashlib.sha224(public_key_readable.encode("utf-8")).hexdigest()  # hashed public key
+		account_key = PBKDF2(master_key, deriv_path.encode('utf-8'), dkLen=length, count=1)
+		#print("Account key: " + str(base64.b64encode(account_key)))
+
+		rsa = rsa_functions.RSAPy(n,account_key)
+		key = RSA.construct(rsa.keypair)
+
+		private_key_readable = key.exportKey().decode("utf-8")
+		public_key_readable = key.publickey().exportKey().decode("utf-8")
+		address = hashlib.sha224(public_key_readable.encode("utf-8")).hexdigest()  # hashed public key
+		app_log.info("Seed and address created successfully")
+		m_ken = True
+		
+	except Exception as e:
+		app_log.warning('Key Generation error: {}'.format(e))
+		m_ken = False
 
 pathlib.Path(address).mkdir(parents=True, exist_ok=True) # create folder to store the files
 
-app_log.info('Generating address: ' + address)
 # generate key pair and an address
 
 pwd_qr = pyqrcode.create(pwd_a)
